@@ -131,26 +131,6 @@ footer{border-top:1px solid var(--line)}
 #top{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;background:linear-gradient(135deg,#ff5fa2,#ffc371);color:#12081c;font-size:1.2rem;font-weight:700;opacity:0;pointer-events:none;transition:opacity .25s;z-index:20}
 #top.show{opacity:1;pointer-events:auto}
 
-/* browser-local file upload area */
-.upload-panel{max-width:850px}
-.upload-drop{border:2px dashed var(--purple);border-radius:18px;padding:34px 20px;text-align:center;background:rgba(255,126,182,.06)}
-.upload-drop.dragover{background:rgba(255,126,182,.16);box-shadow:0 0 24px rgba(255,126,182,.22)}
-.upload-drop .ico{font-size:2.4rem}
-.upload-drop h3{margin-bottom:8px}
-.upload-drop p{color:var(--mute);margin:6px auto;max-width:58ch}
-.upload-select{display:inline-block;margin:14px 0 4px}
-.upload-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:24px;flex-wrap:wrap}
-.upload-heading h3{margin:0}
-.upload-list{display:grid;gap:10px;margin-top:14px}
-.upload-item{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:rgba(54,22,66,.24)}
-.upload-item .file-meta{flex:1;min-width:160px;overflow-wrap:anywhere}
-.upload-item .file-meta b{display:block}
-.upload-item .file-meta small{color:var(--mute)}
-.upload-item a,.upload-item button{font:inherit;font-weight:700}
-.upload-item .file-action{border:1px solid var(--purple);border-radius:999px;padding:7px 13px;background:transparent;color:var(--ink);text-decoration:none;cursor:pointer}
-.upload-item .file-action:hover{background:var(--soft)}
-@media(max-width:560px){.upload-item{align-items:flex-start}.upload-item .file-meta{flex-basis:100%}}
-
 </style>
 </head>
 <body>
@@ -230,22 +210,6 @@ footer{border-top:1px solid var(--line)}
 </div></section>
 
 
-<section class="alt" id="uploads"><div class="wrap">
-<h2>Upload Files</h2>
-<p class="sec-sub">Choose files from your device to preview and manage them in this browser session.</p>
-<div class="card upload-panel">
-  <div class="upload-drop" id="dropzone">
-    <span class="ico">⇧</span>
-    <h3>Upload your files</h3>
-    <p>Drag and drop files here, or browse your device. Multiple files are supported.</p>
-    <label class="btn purple upload-select" for="fileInput">Choose Files</label>
-    <input id="fileInput" type="file" multiple hidden>
-    <p class="note">Files stay in your browser; this static portfolio does not send them to a server.</p>
-  </div>
-  <div class="upload-heading"><h3>Selected files</h3><button class="btn ghost pbtn" id="clearUploads" type="button">Clear list</button></div>
-  <div id="uploadList" class="upload-list" aria-live="polite"><p class="note">No files selected yet.</p></div>
-</div>
-</div></section>
 
 <section id="contact"><div class="wrap split">
 <div class="ct"><h2>Contact</h2>
@@ -273,37 +237,6 @@ footer{border-top:1px solid var(--line)}
 
 <script>
 
-/* Local file picker: preview/download only; no server upload */
-(function(){
-  var picker=document.getElementById('fileInput'),zone=document.getElementById('dropzone');
-  var list=document.getElementById('uploadList'),clear=document.getElementById('clearUploads');
-  if(!picker||!zone||!list||!clear)return;
-  var entries=[];
-  function sizeLabel(n){if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(1)+' MB'}
-  function render(){
-    if(!entries.length){list.innerHTML='<p class="note">No files selected yet.</p>';return}
-    list.innerHTML=entries.map(function(x,i){
-      return '<div class="upload-item"><div class="file-meta"><b>'+safe(x.file.name)+'</b><small>'+sizeLabel(x.file.size)+' · '+safe(x.file.type||'Unknown file type')+'</small></div>'+
-      '<a class="file-action" href="'+x.url+'" download="'+safe(x.file.name)+'">Download</a>'+
-      '<button class="file-action" type="button" data-remove="'+i+'" aria-label="Remove '+safe(x.file.name)+'">Remove</button></div>';
-    }).join('');
-  }
-  function safe(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  function add(files){
-    Array.from(files||[]).forEach(function(file){entries.push({file:file,url:URL.createObjectURL(file)})});
-    render();
-  }
-  picker.addEventListener('change',function(){add(picker.files);picker.value=''});
-  ['dragenter','dragover'].forEach(function(ev){zone.addEventListener(ev,function(e){e.preventDefault();zone.classList.add('dragover')})});
-  ['dragleave','drop'].forEach(function(ev){zone.addEventListener(ev,function(e){e.preventDefault();zone.classList.remove('dragover')})});
-  zone.addEventListener('drop',function(e){add(e.dataTransfer.files)});
-  list.addEventListener('click',function(e){
-    var b=e.target.closest('[data-remove]');if(!b)return;
-    var i=Number(b.getAttribute('data-remove'));URL.revokeObjectURL(entries[i].url);entries.splice(i,1);render();
-  });
-  clear.addEventListener('click',function(){entries.forEach(function(x){URL.revokeObjectURL(x.url)});entries=[];render()});
-  addEventListener('beforeunload',function(){entries.forEach(function(x){URL.revokeObjectURL(x.url)})});
-})();
 
 var r=document.documentElement,tb=document.getElementById('theme');
 function dark(){return r.dataset.theme!=='light'}
